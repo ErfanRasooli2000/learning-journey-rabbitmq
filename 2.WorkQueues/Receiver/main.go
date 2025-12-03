@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"log"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -14,12 +16,15 @@ func main() {
 	channel := CreateChannel(connection)
 	defer channel.Close()
 
-	queue := CreateQueue(channel, "hello")
+	queue := CreateQueue(channel, "work")
+
+	err1 := channel.Qos(1, 0, false)
+	failOnError(err1)
 
 	msgs, err := channel.Consume(
 		queue.Name,
 		"",
-		true,
+		false,
 		false,
 		false,
 		false,
@@ -32,6 +37,9 @@ func main() {
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body)
+			dotCount := bytes.Count(d.Body, []byte("."))
+			time.Sleep(time.Microsecond * time.Duration(dotCount))
+			d.Ack(false)
 		}
 	}()
 
