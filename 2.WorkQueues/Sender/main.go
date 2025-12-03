@@ -1,12 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"context"
-	"fmt"
 	"log"
-	"os"
-	"strings"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -14,30 +10,17 @@ import (
 
 func main() {
 
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("What is Your name?")
+	var texts = []string{
+		"hello..",
+		"hello.",
+		"hello...",
+		"hello....",
+	}
 
-	name, _ := reader.ReadString('\n')
-	name = strings.TrimSpace(name)
-
-	Send(name + " Connected")
-
-	for {
-		fmt.Print("Message : ")
-
-		text, _ := reader.ReadString('\n')
-		text = strings.TrimSpace(text)
-
-		fmt.Println(text)
-
-		if text == "exit" {
-			Send(name + " Exited!")
-			break
+	for i := 0; i < 100; i++ {
+		for _, val := range texts {
+			Send(val)
 		}
-
-		Send(text)
-
-		fmt.Println("Sent")
 	}
 }
 
@@ -48,7 +31,7 @@ func Send(text string) {
 	defer rabbit.Close()
 	defer channel.Close()
 
-	queue := CreateQueue(channel, "hello")
+	queue := CreateQueue(channel, "work")
 
 	PublishMessage(channel, queue, CreateMessage(text))
 }
